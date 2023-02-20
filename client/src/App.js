@@ -1,7 +1,7 @@
-import logo from './logo.svg';
-import './App.css';
 import ApolloClient from 'apollo-boost';
 import gql from 'graphql-tag';
+import { useEffect, useState } from 'react';
+import { ApolloProvider, ApolloConsumer } from 'react-apollo';
 
 const client = new ApolloClient({ uri: 'http://localhost:4000/' });
 client.query({ query: gql`
@@ -11,28 +11,36 @@ client.query({ query: gql`
             title
         }
     }
-`});
+`}).then(result => console.dir(result));
 
 function App() {
+    const [state, set] = useState('Nothing to comment...');
+
+    useEffect(() => {
+        setTimeout(() => {
+            set('2 seconds have passed...');
+        }, 2000);
+    }, []);
+
     return (
-        <div className="App">
-        <header className="App-header">
-            <img src={logo} className="App-logo" alt="logo" />
+        <ApolloProvider client={client}>
+            <div>Hello World! - {state}</div>
 
-            <p>
-                Edit <code>src/App.js</code> and save to reload.
-            </p>
+            <ApolloConsumer>
+                {client => {
+                    client.query({ query: gql`
+                        {
+                            recipes {
+                                id
+                                title
+                            }
+                        }
+                    `}).then(result => console.dir(result));
 
-            <a
-                className="App-link"
-                href="https://reactjs.org"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Learn React
-            </a>
-        </header>
-        </div>
+                    return null;
+                }}
+            </ApolloConsumer>
+        </ApolloProvider>
     );
 }
 
