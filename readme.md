@@ -25,25 +25,17 @@ Setup and Connect an Apollo Client to a React Application with Apollo Provider
     `});``
 
 4. We can use Apollo provider to pass the client down the rendering tree via React's context feature. This provider required an instantiated Apollo client.
-    `import { ApolloProvider, ApolloConsumer } from 'react-apollo'`
-    ``
+    `import { ApolloProvider, ApolloConsumer } from 'react-apollo'`.
+    `
         <ApolloProvider client={client}>
             <div>Hello World!</div>
 
             <ApolloConsumer>
                 {client => {
-                    client.query({ query: gql`
-                        {
-                            recipes {
-                                id
-                                title
-                            }
-                        }
-                    `}).then(result => console.dir(result));
-
+                    client.query({ query }).then(result => console.dir(result));
                     return null;
                 }}
             </ApolloConsumer>
         </ApolloProvider>
-    ``
+    `
 
