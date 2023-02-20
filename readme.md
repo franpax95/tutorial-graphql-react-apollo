@@ -73,7 +73,7 @@ Source2: [https://www.apollographql.com/docs/react/get-started](https://www.apol
                     id
                     title
                 }
-            }
+            };
         `
 
         export default function Recipes() {
@@ -92,3 +92,84 @@ Source2: [https://www.apollographql.com/docs/react/get-started](https://www.apol
     Whenever this component renders, the *useQuery* hook automatically executes our query and returns a result object containing *loading*, *error*, and *data* properties:
     1. Apollo Client automatically tracks a query's loading and error states, which are reflected in the *loading* and *error* properties.
     2. When the result of your query comes back, it's attached to the *data* property.
+
+## Lesson 3: Provide Dynamic Arguments in a Apollo Query Component with GraphQL Variables
+
+1. We can pass arguments to our queries. In order to filter for vegetarian recipes, our recipes query accepts a Boolean argument, vegetarian:
+    ```
+        const GET_RECIPES = gql`
+            {
+                recipes(vegetarian: true) {
+                    id
+                    title
+                }
+            }
+        `;
+    ```
+
+2. We can ensure that a query must be provided with certain variables:
+    ```
+        const GET_RECIPES = gql`
+            query recipes($vegetarian: Boolean!) {
+                recipes(vegetarian: $vegetarian) {
+                    id
+                    title
+                }
+            }
+        `;
+
+        /** */
+
+        const { loading, error, data } = useQuery(GET_RECIPES, {
+            variables: { vegetarian: true }
+        });
+    ```
+
+3. And we can make that variables depends on a React state. Combining all we have:
+    #### Recipes.js
+    ```
+        // ...
+
+        const GET_RECIPES = gql`
+            query recipes($vegetarian: Boolean!) {
+                recipes(vegetarian: $vegetarian) {
+                    id
+                    title
+                }
+            }
+        `;
+
+        export default function Recipes({ vegetarian = false }) {
+            const { loading, error, data } = useQuery(GET_RECIPES, {
+                variables: { vegetarian }
+            });
+
+            if (loading) return <p>Loading...</p>;
+            if (error) return <p>Error : {error.message}</p>;
+
+            return (
+                <ul>
+                    {data.recipes.map(({ id, title }) => (<li key={id}>{title}</li>))}
+                </ul>
+            );
+        }
+    ```
+
+    #### App.js
+    ```
+        // ...
+
+        function App() {
+            const [vegetarian, setVegetarian] = useState(false);
+
+            return (
+                <div>
+                    <label>
+                        Vegetarian?
+                        <input type="checkbox" value={vegetarian} onChange={e => setVegetarian(e.target.checked)} />
+                    </label>
+                    <Recipes vegetarian={vegetarian} />
+                </div>
+            );
+        }
+    ```
