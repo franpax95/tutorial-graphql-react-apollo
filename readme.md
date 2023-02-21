@@ -224,7 +224,18 @@ Source2: [https://www.apollographql.com/docs/react/get-started](https://www.apol
             );
         }
     ```
-    We passed an argument to our mutation query to add a Recipe. However, our recipe list is located in another component, so if we already have data loaded, we cannot see it.
+    We passed an argument to our mutation query to add a Recipe. In this example, we use the function *addRecipe* to get the recipe to insert. We can pass it in the hooks directly.
+    ```
+        const [addRecipe, { data, loading, error }] = useMutation(ADD_RECIPE, {
+            variables: { recipe: {
+                title: 'Placeholder',
+                vegetarian: false
+            }}
+        });
+    ```
+    If you provide the same option to both *useMutation* and your mutate function, the mutate function's value takes precedence. This is useful to declare some default values to our Recipes, for example.
+    
+    Now, we already send a recipe to our GraphQL Server. However, our recipe list is located in another component, so if we already have data loaded, we cannot see it.
 
 2. If you know that your app usually needs to refetch certain queries after a particular mutation, you can include a *refetchQueries* array in that mutation's options. In this case we have a query that depends on the Boolean variable 'vegetable', so we add two queries, in order to ensure that we refresh all possibilities:
     ```

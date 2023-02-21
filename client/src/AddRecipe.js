@@ -31,7 +31,9 @@ export default function AddRecipe() {
 
     const onSubmit = event => {
         event.preventDefault();
-        addRecipe({ variables: { recipe: { title, vegetarian }}});
+        addRecipe({ variables: { recipe: { title, vegetarian }}}).then(res => {
+            console.dir(res);
+        });
     }
 
     if (loading)    return 'Submitting...';
