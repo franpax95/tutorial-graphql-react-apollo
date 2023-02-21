@@ -1,14 +1,7 @@
 import React from 'react';
-import { useQuery, gql } from '@apollo/client';
+import { useQuery } from '@apollo/client';
+import { GET_RECIPES } from './getRecipesQuery';
 
-const GET_RECIPES = gql`
-    query recipes($vegetarian: Boolean!) {
-        recipes(vegetarian: $vegetarian) {
-            id
-            title
-        }
-    }
-`;
 
 export default function Recipes({ vegetarian = false }) {
     const { loading, error, data } = useQuery(GET_RECIPES, {

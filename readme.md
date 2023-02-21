@@ -173,3 +173,85 @@ Source2: [https://www.apollographql.com/docs/react/get-started](https://www.apol
             );
         }
     ```
+
+# Lesson 4: Mutations in Apollo Client
+### Modify data with the useMutation hook
+
+1. To execute a mutation, you first call *useMutation* within a React component and pass it the mutation you want to execute, like so:
+    ```
+        import React, { useState } from 'react';
+        import { useMutation, gql } from '@apollo/client';
+
+        const ADD_RECIPE = gql`
+            mutation addRecipe($recipe: RecipeInput!) {
+                addRecipe(recipe: $recipe) {
+                    id
+                    title
+                }
+            }
+        `;
+
+        export default function AddRecipe() {
+            const [addRecipe, { data, loading, error }] = useMutation(ADD_RECIPE);
+
+            const [title, setTitle] = useState('');
+            const [vegetarian, setVegetarian] = useState(false);
+
+            const onSubmit = event => {
+                event.preventDefault();
+                addRecipe({ variables: { recipe: { title, vegetarian }}});
+            }
+
+            if (loading)    return 'Submitting...';
+            if (error)      return `Submission error! ${error.message}`;
+
+            return (
+                <form onSubmit={onSubmit}>
+                    <div className="form-group">
+                        <label>Title</label>
+                        <input value={title} onChange={e => setTitle(e.target.value)} />
+                    </div>
+
+                    <div className="form-group">
+                        <label>
+                            Vegetarian
+                            <input type="checkbox" value={vegetarian} onChange={e => setVegetarian(e.target.checked)} />
+                        </label>
+                    </div>
+
+                    <input type="submit" value="Save" />
+                </form>
+            );
+        }
+    ```
+    We passed an argument to our mutation query to add a Recipe. However, our recipe list is located in another component, so if we already have data loaded, we cannot see it.
+
+2. If you know that your app usually needs to refetch certain queries after a particular mutation, you can include a *refetchQueries* array in that mutation's options. In this case we have a query that depends on the Boolean variable 'vegetable', so we add two queries, in order to ensure that we refresh all possibilities:
+    ```
+        import { GET_RECIPES } from './getRecipesQuery';
+
+        export default function AddRecipe() {
+            const [addRecipe, { data, loading, error }] = useMutation(ADD_RECIPE, {
+                refetchQueries: [
+                    { 
+                        query: GET_RECIPES,
+                        variables: { vegetarian: true }
+                    },
+                    { 
+                        query: GET_RECIPES,
+                        variables: { vegetarian: false }
+                    },
+                ]
+            });
+
+            // ...
+        }
+    ```
+
+3. We can extend the loading state until the refreshQueries finish if we specify the *awaitRefetchQueries*, like so:
+    ```
+        const [addRecipe, { data, loading, error }] = useMutation(ADD_RECIPE, {
+            refetchQueries: [/** Your queries */],
+            awaitRefetchQueries: true
+        });
+    ```
