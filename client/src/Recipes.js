@@ -4,8 +4,9 @@ import { GET_RECIPES } from './apollo/getRecipesQuery';
 import { UPDATE_RECIPE_STAR } from './apollo/updateStarredQuery';
 
 export default function Recipes({ vegetarian = false }) {
-    const { loading, error, data } = useQuery(GET_RECIPES, {
-        variables: { vegetarian }
+    const { loading, error, data, refetch } = useQuery(GET_RECIPES, {
+        variables: { vegetarian },
+        pollInterval: 3000
     });
 
     const [updateRecipeStarred] = useMutation(UPDATE_RECIPE_STAR, {
@@ -29,7 +30,7 @@ export default function Recipes({ vegetarian = false }) {
     if (loading)    return <p>Loading...</p>;
     if (error)      return <p>Error : {error.message}</p>;
 
-    return (
+    return (<>
         <ul className="Recipes">
             {data.recipes.map(({ id, title, isStarred }) => (
                 <li key={id}>
@@ -41,5 +42,7 @@ export default function Recipes({ vegetarian = false }) {
                 </li>
             ))}
         </ul>
-    );
+
+        <button onClick={() => refetch()}>Refresh Recipes</button>
+    </>);
 }

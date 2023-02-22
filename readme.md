@@ -346,3 +346,18 @@ Apollo introduced a way to manage local state through GraphQL queries and mutati
     ```
     Note that we still use our refetchQueries: we want to refresh our data, to see the changes on the other component which is calling the read query.
 
+# Lesson 6: Refetch Data either Manually or on Timed Intervals
+
+1. We can export the *refetch* function directly from our *useQuery* hook, like so:
+    ```
+        const { loading, error, data, refetch } = useQuery(GET_RECIPES);
+    ```
+    If we call it, we can refresh the data. *You can check it adding data in another tab browser, then refresh your data.*
+
+2. We can specify a poll interval to refresh our data automatically:
+    ```
+        const { loading, error, data, refetch } = useQuery(GET_RECIPES, {
+            pollInterval: 3000
+        });
+    ```
+    
