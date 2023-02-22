@@ -6,15 +6,16 @@ function App() {
     const [vegetarian, setVegetarian] = useState(false);
 
     return (
-        <div>
+        <div className="App">
             <AddRecipe />
 
             <br /><hr /><br />
 
-            <label>
+            <label className="vegetarian-check">
                 Vegetarian?
                 <input type="checkbox" value={vegetarian} onChange={e => setVegetarian(e.target.checked)} />
             </label>
+
             <Recipes vegetarian={vegetarian} />
         </div>
     );

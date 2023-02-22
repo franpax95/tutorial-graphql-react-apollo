@@ -266,3 +266,83 @@ Source2: [https://www.apollographql.com/docs/react/get-started](https://www.apol
             awaitRefetchQueries: true
         });
     ```
+
+# Lesson 5: Manage Local State using Apollo by extending the GraphQL Schema on the Client
+Apollo introduced a way to manage local state through GraphQL queries and mutations. This can be achieved using the @client directive.
+
+1. Your Apollo Client queries can include local-only fields that aren't defined in your GraphQL server's schema:
+    ```
+        export const GET_RECIPES = gql`
+            query recipes($vegetarian: Boolean!) {
+                recipes(vegetarian: $vegetarian) {
+                    id
+                    title
+                    isStarred @client @ This is a local-only field
+                }
+            }
+        `;
+    ```
+    The values for these fields are calculated locally using any logic you want, such as reading data from *localStorage*.
+
+2. To query your 'local' field, we can use resolvers. We add these on the client initialization:
+    ```
+        const client = new ApolloClient({
+            uri: 'http://localhost:4000/',
+            cache: new InMemoryCache(),
+            resolvers: {
+                Recipe: {
+                    isStarred: parent => {
+                        const starredRecipes = JSON.parse(localStorage.getItem(STARRED_STORAGE)) || [];
+                        return starredRecipes.includes(parent.id);
+                    }
+                },
+                Mutation: {
+                    updateRecipeStarred: (_, variables) => {
+                        const starredRecipes = JSON.parse(localStorage.getItem(STARRED_STORAGE)) || [];
+                        if (variables.isStarred) {
+                            localStorage.setItem(STARRED_STORAGE, JSON.stringify([...starredRecipes, variables.id]));
+                        } else {
+                            localStorage.setItem(STARRED_STORAGE, JSON.stringify(starredRecipes.filter(recipeId => recipeId !== variables.id)));
+                        }
+
+                        return ({
+                            __typename: 'Recipe',
+                            isStarred: variables.isStarred,
+                        });
+                    }
+                }
+            }
+        });
+    ```
+    The Recipe resolver manages the reading of which recipes have a star. It search if the recipe id is included in the local storage collection. The *Mutation* resolver manages the updating of the local storage through a mutation. This mutation does not exist yet.
+
+3. We need a mutation that allow us to update the isStarred field of a recipe.
+    ```
+        export const UPDATE_RECIPE_STAR = gql`
+            mutation updateRecipeStarred($id: ID!, $isStarred: Boolean!) {
+                updateRecipeStarred(id: $id, isStarred: $isStarred) @client
+            }
+        `;
+    ```
+    Then, you just have to use it, passing the new isStarred value for a specific id:
+    ```
+        const [updateRecipeStarred] = useMutation(UPDATE_RECIPE_STAR, {
+            refetchQueries: [
+                { 
+                    query: GET_RECIPES,
+                    variables: { vegetarian: true }
+                },
+                { 
+                    query: GET_RECIPES,
+                    variables: { vegetarian: false }
+                },
+            ],
+            awaitRefetchQueries: true
+        });
+
+        const onStarClick = (event, recipe) => {
+            updateRecipeStarred({ variables: { ...recipe }});
+        }
+    ```
+    Note that we still use our refetchQueries: we want to refresh our data, to see the changes on the other component which is calling the read query.
+

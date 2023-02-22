@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
-import { useMutation, gql } from '@apollo/client';
-import { GET_RECIPES } from './getRecipesQuery';
-
-const ADD_RECIPE = gql`
-    mutation addRecipe($recipe: RecipeInput!) {
-        addRecipe(recipe: $recipe) {
-            id
-            title
-        }
-    }
-`;
+import { useMutation } from '@apollo/client';
+import { GET_RECIPES } from './apollo/getRecipesQuery';
+import { ADD_RECIPE } from './apollo/addRecipeQuery';
 
 export default function AddRecipe() {
     const [addRecipe, { data, loading, error }] = useMutation(ADD_RECIPE, {
@@ -40,18 +32,16 @@ export default function AddRecipe() {
     if (error)      return `Submission error! ${error.message}`;
 
     return (
-        <form onSubmit={onSubmit}>
+        <form className="recipe-form" onSubmit={onSubmit}>
             <div className="form-group">
                 <label>Title</label>
                 <input value={title} onChange={e => setTitle(e.target.value)} />
             </div>
 
-            <div className="form-group">
-                <label>
-                    Vegetarian
-                    <input type="checkbox" value={vegetarian} onChange={e => setVegetarian(e.target.checked)} />
-                </label>
-            </div>
+            <label className="form-group">
+                <span>Vegetarian</span>
+                <input type="checkbox" value={vegetarian} onChange={e => setVegetarian(e.target.checked)} />
+            </label>
 
             <input type="submit" value="Save" />
         </form>
